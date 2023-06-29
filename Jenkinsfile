@@ -5,14 +5,14 @@ pipeline {
         stage('Build Image') {
             steps {
                 script {
-                    dockerImage = docker.build("razaqadedeji/tooling_application:${env.BUILD_ID}")
+                    dockerImage = docker.build "tooling-app:1.0:${env.BUILD_ID}"
                 }
             }
         }
         stage('Docker Login') {
             steps {
                 script {
-                    docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-razaq') {
+                    docker.withRegistry('https://hub.docker.com/r/razaqadedeji/tooling_application', 'docker-hub-razaq') {
                         // no steps needed here
                     }
                 }
@@ -21,7 +21,7 @@ pipeline {
         stage('Push Image') {
             steps {
                 script {
-                    docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-razaq') {
+                    docker.withRegistry('https://hub.docker.com/r/razaqadedeji/tooling_application', 'docker-hub-razaq') {
                         dockerImage.push()
                     }
                 }
