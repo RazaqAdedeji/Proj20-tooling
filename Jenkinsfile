@@ -5,7 +5,7 @@ pipeline {
         stage('Build Image') {
             steps {
                 script {
-                    dockerImage = docker.build "tooling-app:1.0:${env.BUILD_ID}"
+                    dockerImage = docker build "tooling-app:1.0:${env.BUILD_ID}"
                 }
             }
         }
