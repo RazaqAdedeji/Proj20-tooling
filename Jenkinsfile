@@ -32,9 +32,8 @@ pipeline{
         stage('Building application ') {
             steps {
                 script {
-                    
-                    sh " docker login -u razaqadedeji -p ${env.PASSWORD}"
-                    sh " docker build -t razaqadedeji/tooling-proj20:${env.TAG} ."
+                    sh "/usr/local/bin/docker login -u razaqadedeji -p ${env.PASSWORD}"
+                    sh "/usr/local/bin/docker build -t razaqadedeji/tooling-proj20:${env.TAG} ."
                 }
             }
         }
@@ -42,7 +41,7 @@ pipeline{
         stage('Creating docker container') {
             steps {
                 script {
-                    sh " docker run -d --name todo-app-${env.random_num} -p 8000:8000 razaqadedeji/tooling-proj20:${env.TAG}"
+                    sh "/usr/local/bin/docker run -d --name todo-app-${env.random_num} -p 8000:8000 razaqadedeji/tooling-proj20:${env.TAG}"
                 }
             }
         }
@@ -59,7 +58,7 @@ pipeline{
         stage("Publish to Registry") {
             steps {
                 script {
-                    sh " docker push mshallom/todo-proj20:${env.TAG}"
+                    sh "/usr/local/bin/docker push mshallom/todo-proj20:${env.TAG}"
                 }
             }
         }
@@ -67,9 +66,9 @@ pipeline{
         stage ('Clean Up') {
             steps {
                 script {
-                    sh " docker stop tooling-app-${env.random_num}"
-                    sh " docker rm tooling-app-${env.random_num}"
-                    sh " docker rmi razaqadedeji/tooling-proj20:${env.TAG}"
+                    sh "/usr/local/bin/docker stop tooling-app-${env.random_num}"
+                    sh "/usr/local/bin/docker rm tooling-app-${env.random_num}"
+                    sh "/usr/local/bin/docker rmi razaqadedeji/tooling-proj20:${env.TAG}"
                 }
             }
         }
@@ -77,7 +76,7 @@ pipeline{
         stage ('logout Docker') {
             steps {
                 script {
-                    sh " docker logout"
+                    sh "/usr/local/bin/docker logout"
                 }
             }
         }
