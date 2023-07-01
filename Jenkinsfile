@@ -2,8 +2,14 @@ pipeline {
     agent any
     stages { 
         stage('SCM Checkout') {
-            steps{
-            git 'https://github.com/RazaqAdedeji/Proj20-tooling.git'
+            steps {
+                script {
+                    checkout([
+                        $class: 'GitSCM', 
+                        branches: [[name: '*/main']],
+                        userRemoteConfigs: [[url: 'https://github.com/RazaqAdedeji/Proj20-tooling.git']]
+                    ])
+                }
             }
         }
 
@@ -29,5 +35,3 @@ pipeline {
         }
     }
 }
-
-
