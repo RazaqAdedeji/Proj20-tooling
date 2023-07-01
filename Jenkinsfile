@@ -1,32 +1,33 @@
 pipeline {
     agent any
+    stages { 
+        stage('SCM Checkout') {
+            steps{
+            git 'https://github.com/RazaqAdedeji/Proj20-tooling.git'
+            }
+        }
 
-    stages {
-        stage('Build Image') {
-            steps {
-                script {
-                    dockerImage = docker build "tooling-app:1.0:${env.BUILD_ID}"
-                }
+        stage('Build docker image') {
+            steps {  
+                sh 'docker build -t razaqadedeji/tooling:$BUILD_NUMBER .'
             }
         }
-        stage('Docker Login') {
-            steps {
-                script {
-                    docker.withRegistry('https://hub.docker.com/r/razaqadedeji/tooling_application', 'docker-hub-razaq') {
-                        // no steps needed here
-                    }
-                }
-            }
-        }
-        stage('Push Image') {
-            steps {
-                script {
-                    docker.withRegistry('https://hub.docker.com/r/razaqadedeji/tooling_application', 'docker-hub-razaq') {
-                        dockerImage.push()
-                    }
+        stage('Login to Docker Hub and Push Image') {
+            steps{
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-razaq', 
+                                                  passwordVariable: 'DOCKERHUB_PSW', 
+                                                  usernameVariable: 'DOCKERHUB_USR')]) {
+                    sh 'echo $DOCKERHUB_PSW | docker login -u $DOCKERHUB_USR --password-stdin'
+                    sh 'docker push razaqadedeji/tooling:$BUILD_NUMBER'
                 }
             }
         }
     }
+    post {
+        always {
+            sh 'docker logout'
+        }
+    }
 }
+
 
