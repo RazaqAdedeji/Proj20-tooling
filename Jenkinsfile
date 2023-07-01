@@ -17,9 +17,15 @@ pipeline{
             }
         }
 
-        stage('Checkout Git') {
+        stage('SCM Checkout') {
             steps {
-                git branch: 'main', credentialsId: 'docker-hub-razaq', url: 'https://github.com/RazaqAdedeji/Proj20-tooling.git'
+                script {
+                    checkout([
+                        $class: 'GitSCM', 
+                        branches: [[name: '*/main']],
+                        userRemoteConfigs: [[url: 'https://github.com/RazaqAdedeji/Proj20-tooling.git']]
+                    ])
+                }
             }
         }
 
@@ -36,7 +42,7 @@ pipeline{
         stage('Creating docker container') {
             steps {
                 script {
-                    sh " docker run -d --name todo-app-${env.random_num} -p 8000:8000 mrazaqadedeji/tooling-proj20:${env.TAG}"
+                    sh " docker run -d --name todo-app-${env.random_num} -p 8000:8000 razaqadedeji/tooling-proj20:${env.TAG}"
                 }
             }
         }
