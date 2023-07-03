@@ -15,7 +15,7 @@ pipeline {
 
         stage('Build docker image') {
             steps {  
-                sh '/usr/local/bin/docker build -t razaqadedeji/tooling:$BUILD_NUMBER .'
+                sh 'docker build -t razaqadedeji/tooling:$BUILD_NUMBER .'
             }
         }
         stage('Login to Docker Hub and Push Image') {
@@ -23,15 +23,15 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-razaq', 
                                                   passwordVariable: 'DOCKERHUB_PSW', 
                                                   usernameVariable: 'DOCKERHUB_USR')]) {
-                    sh 'echo $DOCKERHUB_PSW | /usr/local/bin/docker login -u $DOCKERHUB_USR --password-stdin'
-                    sh '/usr/local/bin/docker push razaqadedeji/tooling:$BUILD_NUMBER'
+                    sh 'echo $DOCKERHUB_PSW | docker login -u $DOCKERHUB_USR --password-stdin'
+                    sh 'docker push razaqadedeji/tooling:$BUILD_NUMBER'
                 }
             }
         }
     }
     post {
         always {
-            sh '/usr/local/bin/docker logout'
+            sh 'docker logout'
         }
     }
 }
