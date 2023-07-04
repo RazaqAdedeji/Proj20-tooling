@@ -6,7 +6,6 @@ pipeline {
                 script {
                     checkout([
                         $class: 'GitSCM', 
-                        branches: [[name: '*/main']],
                         userRemoteConfigs: [[url: 'https://github.com/RazaqAdedeji/Proj20-tooling.git']]
                     ])
                 }
@@ -15,7 +14,7 @@ pipeline {
 
         stage('Build docker image') {
             steps {  
-                sh 'docker build -t razaqadedeji/tooling:$BUILD_NUMBER .'
+                sh 'docker build -t razaqadedeji/tooling:$BRANCH_NAME .'
             }
         }
         stage('Login to Docker Hub and Push Image') {
@@ -24,7 +23,7 @@ pipeline {
                                                   passwordVariable: 'DOCKERHUB_PSW', 
                                                   usernameVariable: 'DOCKERHUB_USR')]) {
                     sh 'echo $DOCKERHUB_PSW | docker login -u $DOCKERHUB_USR --password-stdin'
-                    sh 'docker push razaqadedeji/tooling:$BUILD_NUMBER'
+                    sh 'docker push razaqadedeji/tooling:$BRANCH_NAME'
                 }
             }
         }
