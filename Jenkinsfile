@@ -6,7 +6,6 @@ pipeline {
                 script {
                     checkout([
                         $class: 'GitSCM',
-                        branches: [[name: '*/main'], [name: '*/dev-0.0.1'], [name: '*/feature-0.0.1']],
                         userRemoteConfigs: [[url: 'https://github.com/RazaqAdedeji/Proj20-tooling.git']]
                     ])
                 }
