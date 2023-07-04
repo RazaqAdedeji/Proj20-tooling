@@ -1,16 +1,7 @@
 pipeline {
     agent any
     stages { 
-        stage('SCM Checkout') {
-            steps {
-                script {
-                    checkout([
-                        $class: 'GitSCM', 
-                        userRemoteConfigs: [[url: 'https://github.com/RazaqAdedeji/Proj20-tooling.git']]
-                    ])
-                }
-            }
-        }
+    
 
         stage('Build docker image') {
             steps {  
