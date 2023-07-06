@@ -16,6 +16,7 @@ pipeline {
         stage('Build docker image') {
             steps {  
                 sh 'docker-compose -f tooling.yaml build'
+                sh 'docker tag docker-compose_tooling_frontend:latest razaqadedeji/tooling:3'
             }
         }
 
