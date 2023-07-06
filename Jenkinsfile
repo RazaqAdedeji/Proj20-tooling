@@ -32,7 +32,7 @@ pipeline {
                                                   passwordVariable: 'DOCKERHUB_PSW', 
                                                   usernameVariable: 'DOCKERHUB_USR')]) {
                     sh 'echo $DOCKERHUB_PSW | docker login -u $DOCKERHUB_USR --password-stdin'
-                    sh 'docker push razaqadedeji/tooling:$BUILD_NUMBER'
+                    sh 'docker push razaqadedeji/tooling:3'
                 }
             }
         }
