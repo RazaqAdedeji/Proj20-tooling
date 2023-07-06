@@ -21,7 +21,7 @@ pipeline {
 
         stage('Test') {
             steps {
-                sh 'curl --fail http://tooling_frontend:80 || exit 1'
+                sh 'curl --fail http://localhost:5000 || exit 1'
             }
         }  
 
