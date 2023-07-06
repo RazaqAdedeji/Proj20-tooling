@@ -1,0 +1,69 @@
+version: "3.9"
+services:
+  tooling_frontend:
+    build: .
+    ports:
+      - "5000:80"
+    volumes:
+      - tooling_frontend:/var/www/html
+    links:
+      - db
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://tooling_frontend:80", "||", "exit", "1"]
+      interval: 1m
+      retries: 5
+      start_period: 20s
+      timeout: 10s
+  db:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_DATABASE: toolingdb
+      MYSQL_USER: Admin
+      MYSQL_PASSWORD: Admin.com
+      MYSQL_RANDOM_ROOT_PASSWORD: '1'
+    volumes:
+      - db:/var/lib/mysql
+volumes:
+  tooling_frontend:
+  db:
+  
+
+
+#  version: "3.9" - This specifies the Docker Compose file version to be used. Version 3.9 has specific features and supports specific configurations.
+
+# services: - This section is where you define the services (in essence, the containers) for your application.
+
+#   tooling_frontend: - This defines a service named tooling_frontend.
+
+#     build: .  - This specifies that Docker should build a new image using the Dockerfile in the current directory.
+
+#     ports:    -  This maps port 80 in the container to port 5000 on the host machine.
+#      - "5000:80"
+
+#     volumes:    -  This creates a named volume tooling_frontend and mounts it to /var/www/html in the container.
+#      - tooling_frontend:/var/www/html
+
+#     links:  -  This links the tooling_frontend service to the db service. This means that the tooling_frontend service can access the db service.
+#      - db
+
+#   db: -   This defines another service named db.
+
+#     image: mysql:5.7    -  This specifies that Docker should use the mysql:5.7 image for the db service.
+
+#     restart: always    -  This instructs Docker to always restart the db container if it stops. If it is manually stopped, it is restarted only after Docker daemon restarts or the container itself is manually restarted.
+
+#     environment:               - These lines set environment variables in the db service, which the MySQL image uses for its configuration.
+#      MYSQL_DATABASE: toolingdb
+#      MYSQL_USER: Admin
+#      MYSQL_PASSWORD: Admin.com
+#      MYSQL_RANDOM_ROOT_PASSWORD: '1'
+
+#     volumes:    - This creates a named volume db and mounts it to /var/lib/mysql in the db container. This is where MySQL stores its data.
+#      - db:/var/lib/mysql
+
+# volumes: 
+#  tooling_frontend:
+#  db:  -  This section declares the named volumes that are used in services. Here tooling_frontend and db are declared as named volumes. These volumes will persist data across container shutdown and startup.
+
+#
