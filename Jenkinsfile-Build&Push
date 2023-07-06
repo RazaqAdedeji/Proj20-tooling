@@ -5,32 +5,19 @@ pipeline {
 
         stage('Build docker image') {
             steps {
-                sh 'docker-compose -f tooling.yaml build'
+                sh 'docker build -t razaqadedeji/tooling:$BRANCH_NAME .'
             }
         }
-        stage('Test') {
-            steps {
-                sh 'curl --fail http://tooling_frontend:80 || exit 1'
-            }
-        }
-
         stage('Login to Docker Hub and Push Image') {
             steps{
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-razaq',
                                                   passwordVariable: 'DOCKERHUB_PSW',
                                                   usernameVariable: 'DOCKERHUB_USR')]) {
                     sh 'echo $DOCKERHUB_PSW | docker login -u $DOCKERHUB_USR --password-stdin'
-                    sh 'docker push razaqadedeji/tooling4compose:0.0.3'
+                    sh 'docker push razaqadedeji/tooling:$BRANCH_NAME'
                 }
             }
         }
-
-        stage('Cleanup') {
-            steps {
-                sh 'docker-compose -f tooling.yaml down -v'
-            }
-        }
-
     }
     post {
         always {
