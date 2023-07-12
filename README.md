@@ -72,3 +72,187 @@ Default web root:
 ```
 
 ## If you require permissions to GCP, or Gitlab resources, please talk to dare@propitix.com
+
+
+############
+
+Create the DB contain: 
+​​docker network create --subnet=172.18.0.0/24 php_app_network
+
+First, let us create an environment variable to store the root password:
+$ export MYSQL_PW=
+
+verify the environment variable is created 
+echo $MYSQL_PW
+Then, pull the image and run the container, all in one command like below:
+$ docker run --network php_app_network -h mysqlserverhost --name=mysql-server -e MYSQL_ROOT_PASSWORD=$MYSQL_PW  -d mysql/mysql-server:latest
+
+
+Dockerfile
+
+FROM php:7-apache
+
+# Install mysqli extension
+RUN docker-php-ext-install mysqli pdo_mysql
+
+# Install git
+RUN apt-get update && apt-get install -y git
+
+RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
+
+# Enable Apache mods
+RUN a2enmod rewrite
+
+# Set the working directory in the container
+WORKDIR /var/www/html
+
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Copy the application into the container
+COPY . .
+
+# Copy .env.sample to .env
+RUN cp .env.sample .env
+
+# Install dependencies
+RUN composer install
+
+# Run Laravel's key generation
+RUN php artisan key:generate
+
+# Change owner of the application directory
+RUN chown -R www-data:www-data /var/www/html/
+
+# Make port 80 available to the world outside this container
+EXPOSE 80
+
+# Run artisan server when the container launches
+CMD php artisan serve --host=0.0.0.0 --port=80
+
+
+
+—-----Building image
+
+docker build -t php-app:0.0.1 .
+
+—----Run image 
+
+docker run --network php_app_network -p 8085:80 -it php-app:0.0.1 
+
+
+………
+
+pipeline{
+    agent any
+    environment {
+        TAG = "${env.BRANCH_NAME}-${env.BUILD_NUMBER}"
+        max = 20
+        random_num = "${Math.abs(new Random().nextInt(max+1))}"
+//         docker_password = credentials('dockerhub_password')
+    }
+    stages{
+        stage("Workspace Cleanup") {
+            steps {
+                dir("${WORKSPACE}") {
+                    deleteDir()
+                }
+            }
+        }
+        stage('SCM Checkout') {
+            steps {
+                script {
+                    checkout([
+                        $class: 'GitSCM', 
+                        branches: [[name: '*/main']],
+                        userRemoteConfigs: [[url: 'https://github.com/RazaqAdedeji/Proj20-tooling.git']]
+                    ])
+                }
+            }
+        }
+        stage('Building application ') {
+            steps {
+                script {
+                    sh "/usr/local/bin/docker login -u razaqadedeji -p ${env.PASSWORD}"
+                    sh "/usr/local/bin/docker build -t razaqadedeji/tooling-proj20:${env.TAG} ."
+                }
+            }
+        }
+        stage('Creating docker container') {
+            steps {
+                script {
+                    sh "/usr/local/bin/docker run -d --name todo-app-${env.random_num} -p 8000:8000 razaqadedeji/tooling-proj20:${env.TAG}"
+                }
+            }
+        }
+        stage("Smoke Test") {
+            steps {
+                script {
+                    sh "sleep 60"
+                    sh "curl -I 127.0.0.1:8000"
+                }
+            }
+        }
+        stage("Publish to Registry") {
+            steps {
+                script {
+                    sh "/usr/local/bin/docker push razaqadedeji/tooling-proj20:${env.TAG}"
+                }
+            }
+        }
+        stage ('Clean Up') {
+            steps {
+                script {
+                    sh "/usr/local/bin/docker stop tooling-app-${env.random_num}"
+                    sh "/usr/local/bin/docker rm tooling-app-${env.random_num}"
+                    sh "/usr/local/bin/docker rmi razaqadedeji/tooling-proj20:${env.TAG}"
+                }
+            }
+        }
+        stage ('logout Docker') {
+            steps {
+                script {
+                    sh "/usr/local/bin/docker logout"
+                }
+            }
+        }
+    }
+   
+}
+
+
+—------
+Docker-compose file with Healthstatus
+
+version: "3.9"
+services:
+  tooling_frontend:
+    build: .
+    ports:
+      - "5000:80"
+    volumes:
+      - tooling_frontend:/var/www/html
+    links:
+      - db
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:5000", "||", "exit", "1"]
+      interval: 1m
+      retries: 5
+      start_period: 20s
+      timeout: 10s
+  db:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_DATABASE: toolingdb
+      MYSQL_USER: Admin
+      MYSQL_PASSWORD: Admin.com
+      MYSQL_RANDOM_ROOT_PASSWORD: '1'
+    volumes:
+      - db:/var/lib/mysql
+volumes:
+  tooling_frontend:
+  db:
+
+
+
