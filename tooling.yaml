@@ -1,0 +1,30 @@
+version: "3.9"
+services:
+  tooling_frontend:
+    build: .
+    ports:
+      - "5000:80"
+    volumes:
+      - tooling_frontend:/var/www/html
+    links:
+      - db
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:5000", "||", "exit", "1"]
+      interval: 1m
+      retries: 5
+      start_period: 20s
+      timeout: 10s
+  db:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_DATABASE: toolingdb
+      MYSQL_USER: Admin
+      MYSQL_PASSWORD: Admin.com
+      MYSQL_RANDOM_ROOT_PASSWORD: '1'
+    volumes:
+      - db:/var/lib/mysql
+volumes:
+  tooling_frontend:
+  db:
+
